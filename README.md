@@ -30,6 +30,8 @@ losetup -f /tmp/image
 mkfs.ext4 /dev/loop0
 mount  /dev/loop0 /mnt/nekde
 
+#ip addr add 10.0.0.1/24 dev eth0
+
 NFS
 apt-get install nfs-server
 #v /etc/exports
@@ -54,6 +56,102 @@ smbpasswd -a spos
 service smbd restart
 #mount -t cifs //localhost/share1 /mnt/share -o username=jindra
 #do fstabu -> //localhost/share-spos  /mnt/kkt2       cifs    username=jindra,password=jindra 0       0
+
+
+Apache
+apt-get install apache2
+#v  /etc/apache2/ports.conf  zmwnit port 80 na napr localhost:9000
+#v /etc/apache2/sites-available/000-default.confzmenit port a pripadne slozku (!! at zustane v /var/www/*)
+#ve slozce /var/www vytworit index.hmtl
+a2ensite 0*
+service apache2 reload
+
+Nginx
+apt-get install nginx
+# v /etc/nginx/sites-available/default upravit listen (adresa a port) a root kam to bude sahat
+
+
+Pound
+apt install pound
+#!! v /etc/default/pound nastavit startup=1
+#konfigurační soubor je: /etc/pound/pound.cfg
+
+DNS
+apt-get install bind9 dnsutils
+#Nastavíme /etc/resolv.conf: nameserver 127.0.0.1
+# v /etc/bind/named.conf.local nastavime
+# normalni
+zone "spos-test.spos"{
+        type master;
+        file "/etc/bind/db.spos1.spos";
+};
+#reverzni
+zone "255.168.192.in-addr.arpa" IN {
+        type master;
+        file "/etc/bind/db.rev.spos";
+};
+#vytvorime soubory
+###########################/etc/bind/db.spos1.spos
+
+$TTL    604800
+@       IN      SOA     spos-test.spos. admin.spos-test.spos. (
+                              2         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+
+@       IN      NS      localhost.
+@       IN      A       10.0.0.1
+
+debian2 IN      A       10.0.0.1
+www     IN      CNAME   debian2
+mail    IN      A       10.0.0.1
+@       IN      MX      10      mail
+@       IN      MX      20      mail.lubos.spos.
+;pokud chceme mit MX zaznamy pro "mail.test.spos"
+mail       IN      MX      20      mail
+
+##########################/etc/bind/db.rev.spos
+$ORIGIN 255.168.192.in-addr.arpa.
+$TTL    604800
+@       IN      SOA     ns1.spos-test.spos. admin.spos-test.spos. (
+                             45         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+
+        IN      NS      ns1.spos-test.spos.
+
+55      IN      PTR     avrba.spos-test.spos.
+
+##########################
+
+#otocime bind
+service bind9 restart
+#overeni
+host spos-name.spos
+dig -x 192.168.255.55
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
