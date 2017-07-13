@@ -1,6 +1,6 @@
 # SPOS
 SPOS cheatsheet
-
+```
 Oprava   
 sed -i.bak 's/^\#//g' /etc/resolv.conf #hostnames   
 netstat -tupln #bezici procesy   
@@ -133,7 +133,7 @@ service bind9 restart
 #overeni
 host spos-name.spos
 dig -x 192.168.255.55
-
+```
 
 
 
